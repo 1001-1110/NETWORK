@@ -3,6 +3,7 @@ import javax.swing.JFrame;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JTextArea;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.ListModel;
@@ -20,6 +21,7 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.File;
 import java.util.ArrayList;
 
 import javax.swing.ScrollPaneConstants;
@@ -124,7 +126,15 @@ public class ClientView extends JFrame{
 		
 		JButton btnGames = new JButton("Games");
 		
-		JButton btnNewButton = new JButton("File Transfer");
+		JButton btnFileTransfer = new JButton("File Transfer");
+		btnFileTransfer.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				JFileChooser fc = new JFileChooser();
+				int returnVal = fc.showOpenDialog(null);
+				File file = fc.getSelectedFile();
+				System.out.println(file.getName());
+			}
+		});
 
 		GroupLayout groupLayout = new GroupLayout(getContentPane());
 		groupLayout.setHorizontalGroup(
@@ -144,7 +154,7 @@ public class ClientView extends JFrame{
 						.addGroup(Alignment.TRAILING, groupLayout.createSequentialGroup()
 							.addComponent(btnGames)
 							.addPreferredGap(ComponentPlacement.RELATED)
-							.addComponent(btnNewButton)
+							.addComponent(btnFileTransfer)
 							.addPreferredGap(ComponentPlacement.RELATED)
 							.addComponent(btnLogout))
 						.addGroup(groupLayout.createSequentialGroup()
@@ -182,7 +192,7 @@ public class ClientView extends JFrame{
 							.addComponent(btnSend))
 						.addGroup(groupLayout.createParallelGroup(Alignment.BASELINE)
 							.addComponent(btnLogout)
-							.addComponent(btnNewButton)
+							.addComponent(btnFileTransfer)
 							.addComponent(btnGames)))
 					.addGap(12))
 		);
