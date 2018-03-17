@@ -43,9 +43,9 @@ public class ServerView extends JFrame{
 			groupLayout.createParallelGroup(Alignment.LEADING)
 				.addGroup(groupLayout.createSequentialGroup()
 					.addContainerGap()
-					.addComponent(chatScroll, GroupLayout.PREFERRED_SIZE, 302, GroupLayout.PREFERRED_SIZE)
+					.addComponent(chatScroll, GroupLayout.DEFAULT_SIZE, 302, Short.MAX_VALUE)
 					.addPreferredGap(ComponentPlacement.RELATED)
-					.addComponent(userScroll, GroupLayout.DEFAULT_SIZE, 102, Short.MAX_VALUE)
+					.addComponent(userScroll, GroupLayout.PREFERRED_SIZE, 106, GroupLayout.PREFERRED_SIZE)
 					.addContainerGap())
 		);
 		groupLayout.setVerticalGroup(
@@ -57,7 +57,7 @@ public class ServerView extends JFrame{
 							.addComponent(chatScroll, GroupLayout.DEFAULT_SIZE, 238, Short.MAX_VALUE))
 						.addGroup(groupLayout.createSequentialGroup()
 							.addContainerGap()
-							.addComponent(userScroll, GroupLayout.DEFAULT_SIZE, 238, Short.MAX_VALUE)))
+							.addComponent(userScroll, GroupLayout.DEFAULT_SIZE, 240, Short.MAX_VALUE)))
 					.addContainerGap())
 		);
 		

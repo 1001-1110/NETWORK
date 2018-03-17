@@ -118,14 +118,15 @@ public class ClientController {
     		            			cv.updateChat(((Message) o).getSender()+": "+((Message) o).getContent());
     		            		else
     		            			receivePrivateChat((Message) o);
-    		            	}else if(o instanceof String[]) {
-    		            		cv.updateOnline((String[]) o);
+    		            	}else if(o instanceof OnlineList) {
+    		            		cv.updateOnline(((OnlineList) o).getUsers());
     		            	}else if(o instanceof GroupMessage) {
     		            		receiveGroupChat((GroupMessage) o);
     		            	}
     		            }
     		        } catch(Exception ex) {
     		        	cv.updateChat("Lost connection with server.");
+    		        	ex.printStackTrace();
     		        	isRunning = false;
     		        }         				
     			}
@@ -137,15 +138,19 @@ public class ClientController {
     }
     
     public void sendMessage(String content, String receiver) {
-	    try {
-			output.writeObject(new Message(username,receiver,content));
-		} catch (IOException e) {}
+    	if(content != null) {
+    	    try {
+    			output.writeObject(new Message(username,receiver,content));
+    		} catch (IOException e) {}	
+    	}
     }
     
     public void sendGroupMessage(String content, ArrayList<String> participants) {
-	    try {
-			output.writeObject(new GroupMessage(username,participants,content));
-		} catch (IOException e) {}    	
+    	if(content != null) {
+    	    try {
+    			output.writeObject(new GroupMessage(username,participants,content));
+    		} catch (IOException e) {}       		
+    	}
     }
     
     public String getUsername() {

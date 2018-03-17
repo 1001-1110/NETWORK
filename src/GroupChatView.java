@@ -137,7 +137,11 @@ public class GroupChatView extends JFrame{
 		
 		chatScroll.setViewportView(chatBox);
 		
-		userList = new JList<String>();
+		String[] users = new String[participants.size()];
+		for(int i = 0 ; i < participants.size(); i++)
+			users[i] = participants.get(i);
+		
+		userList = new JList<String>(users);
 		userList.setBorder(new TitledBorder(UIManager.getBorder("TitledBorder.border"), "Participants", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
 		userScroll.setViewportView(userList);
 		getContentPane().setLayout(groupLayout);

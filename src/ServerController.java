@@ -10,6 +10,12 @@ public class ServerController {
 	private ServerModel sm;
 	private ServerView sv;
 	
+	private final String helpMessage = ""
+			+ "## HELP ##\n"
+			+ "To create a private chat, select a user in 'Online Users' then press 'Private Chat'\n"
+			+ "To create a group chat, select multiple users in 'Online Users' by shift-clicking then press 'Private Chat'\n"
+			+ "That is all.";
+	
     public ServerController(int port){
     	sv = new ServerView(port);
     	sm = new ServerModel();
@@ -112,13 +118,31 @@ public class ServerController {
     			while(isRunning) {
     		        try {
     		            Object o;
+    		            boolean isCommand;
     		            if((o = user.getInput().readObject()) != null) {
     		            	if(o instanceof Message) {
-    		            		if(((Message) o).getReceiver().equals("all")) {
-    		            			broadcast((Message) o);
-    		            		}else {
-    		            			specificSend((Message) o);
-    		            		}
+    		            		isCommand = false;
+        		            		if(((Message) o).getContent().charAt(0) == '/') {
+        		            			isCommand = true;
+        		            			if(((Message) o).getContent().length() >= 5) {
+            		            			if(((Message) o).getContent().substring(1,5).equals("help")) {
+            		            				announce(helpMessage,((Message) o).getSender());
+            		            			}else {
+            		            				announce("Invalid command",((Message) o).getSender());
+            		            			}
+        		            			}else {
+        		            				announce("Invalid command",((Message) o).getSender());
+        		            			}
+
+        		            		}
+    		            		
+    		            			if(!isCommand) {
+            		            		if(((Message) o).getReceiver().equals("all")) {
+            		            			broadcast((Message) o);
+            		            		}else {
+            		            			specificSend((Message) o);
+            		            		}  
+    		            			}
     		            	}else if(o instanceof GroupMessage) {
     		            		groupSend((GroupMessage) o);
     		            	}
@@ -147,7 +171,8 @@ public class ServerController {
     	for(int i = 0 ; i < sm.getNumOfUsers() ; i++) {
 			try {
 				ObjectOutputStream output = sm.getUser(i).getOutput();
-		        output.writeObject(onlineUsers);
+				OnlineList users = new OnlineList(onlineUsers);
+		        output.writeObject(users);
 			} catch (IOException e) {} 		
     	}   
     	
@@ -163,6 +188,17 @@ public class ServerController {
 			} catch (IOException e) {} 		
     	}
     }    
+
+    private void announce(String announcement, String specificUser) {
+    	for(int i = 0 ; i < sm.getNumOfUsers() ; i++) {
+    		if(sm.getUser(i).getUsername().equals(specificUser)) {
+    			try {
+    				ObjectOutputStream output = sm.getUser(i).getOutput();
+    				output.writeObject(new Message("Server","all",announcement));   
+    			} catch (IOException e) {} 	    			
+    		}
+    	}
+    }     
     
     private void broadcast(Message message) {
     	for(int i = 0 ; i < sm.getNumOfUsers() ; i++) {
