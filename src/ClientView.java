@@ -25,6 +25,7 @@ import java.io.File;
 import java.util.ArrayList;
 
 import javax.swing.ScrollPaneConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.JPanel;
 import javax.swing.border.LineBorder;
 import java.awt.Color;
@@ -152,17 +153,19 @@ public class ClientView extends JFrame{
 							.addGap(8)))
 					.addGroup(groupLayout.createParallelGroup(Alignment.TRAILING)
 						.addGroup(groupLayout.createSequentialGroup()
-							.addComponent(btnGames)
+							.addGap(16)
+							.addComponent(btnGames, GroupLayout.DEFAULT_SIZE, 74, Short.MAX_VALUE)
 							.addPreferredGap(ComponentPlacement.RELATED)
-							.addComponent(btnFileTransfer)
+							.addComponent(btnFileTransfer, GroupLayout.DEFAULT_SIZE, 105, Short.MAX_VALUE)
 							.addPreferredGap(ComponentPlacement.RELATED)
-							.addComponent(btnLogout))
+							.addComponent(btnLogout, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
 						.addGroup(groupLayout.createSequentialGroup()
 							.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
 								.addGroup(groupLayout.createSequentialGroup()
-									.addComponent(btnCreate)
+									.addComponent(btnCreate, GroupLayout.DEFAULT_SIZE, 72, Short.MAX_VALUE)
 									.addPreferredGap(ComponentPlacement.RELATED)
-									.addComponent(btnJoin))
+									.addComponent(btnJoin, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+									.addGap(4))
 								.addComponent(roomPanel, GroupLayout.DEFAULT_SIZE, 140, Short.MAX_VALUE))
 							.addPreferredGap(ComponentPlacement.UNRELATED)
 							.addGroup(groupLayout.createParallelGroup(Alignment.TRAILING)

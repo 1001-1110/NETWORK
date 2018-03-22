@@ -13,8 +13,7 @@ public class ServerController {
 	private final String helpMessage = ""
 			+ "## HELP ##\n"
 			+ "To create a private chat, select a user in 'Online Users' then press 'Private Chat'\n"
-			+ "To create a group chat, select multiple users in 'Online Users' by shift-clicking then press 'Private Chat'\n"
-			+ "That is all.";
+			+ "To create a group chat, select multiple users in 'Online Users' by shift-clicking then press 'Private Chat'\n";
 	
     public ServerController(int port){
     	sv = new ServerView(port);
@@ -86,7 +85,8 @@ public class ServerController {
     		            while((username = input.readObject()) == null);
     		            ObjectOutputStream output = new ObjectOutputStream(socket.getOutputStream());
     		            if(checkUsernames((String) username)) {
-        		            output.writeObject("Connected to server at port "+socket.getPort()+".");
+        		            output.writeObject("Connected to server at port "+socket.getPort()+".\n"
+        		            		+ helpMessage);
         		            sv.updateChat(username+" ("+socket.getInetAddress() + ":" +socket.getPort()+")" + " has connected to server.");
         		            announce(username+" has connected to server.");
         		            User user = new User((String) username, socket, input, output);
