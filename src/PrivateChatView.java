@@ -27,6 +27,8 @@ public class PrivateChatView extends JFrame{
 	
 	private JTextField input;
 	private JTextArea chatBox;
+	private JButton btnSendFile;
+	private JButton btnStartGame;
 	
 	public PrivateChatView(ClientController cc, String owner, String recipient) {
 		super("Private Chat: "+owner+" -> "+recipient);
@@ -46,7 +48,7 @@ public class PrivateChatView extends JFrame{
 	}
 
 	private void initialize() {
-		setBounds(100, 100, 450, 300);
+		setBounds(100, 100, 620, 300);
 		setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
 		
 		JScrollPane chatScroll = new JScrollPane();
@@ -72,29 +74,40 @@ public class PrivateChatView extends JFrame{
 				input.setText(null);
 			}
 		});
+		
+		btnSendFile = new JButton("Send File");
+		
+		btnStartGame = new JButton("Start Game");
 
 		GroupLayout groupLayout = new GroupLayout(getContentPane());
 		groupLayout.setHorizontalGroup(
 			groupLayout.createParallelGroup(Alignment.LEADING)
 				.addGroup(groupLayout.createSequentialGroup()
 					.addContainerGap()
-					.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
-						.addComponent(chatScroll, GroupLayout.DEFAULT_SIZE, 414, Short.MAX_VALUE)
-						.addGroup(Alignment.TRAILING, groupLayout.createSequentialGroup()
-							.addComponent(input, GroupLayout.DEFAULT_SIZE, 351, Short.MAX_VALUE)
+					.addGroup(groupLayout.createParallelGroup(Alignment.TRAILING)
+						.addComponent(chatScroll, GroupLayout.DEFAULT_SIZE, 410, Short.MAX_VALUE)
+						.addGroup(Alignment.LEADING, groupLayout.createSequentialGroup()
+							.addComponent(input, GroupLayout.DEFAULT_SIZE, 308, Short.MAX_VALUE)
 							.addPreferredGap(ComponentPlacement.RELATED)
-							.addComponent(btnSend)))
+							.addComponent(btnSend, GroupLayout.DEFAULT_SIZE, 63, Short.MAX_VALUE)
+							.addPreferredGap(ComponentPlacement.RELATED)
+							.addComponent(btnSendFile, GroupLayout.DEFAULT_SIZE, 85, Short.MAX_VALUE)
+							.addPreferredGap(ComponentPlacement.RELATED)
+							.addComponent(btnStartGame, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+							.addGap(8)))
 					.addContainerGap())
 		);
 		groupLayout.setVerticalGroup(
-			groupLayout.createParallelGroup(Alignment.LEADING)
-				.addGroup(Alignment.TRAILING, groupLayout.createSequentialGroup()
+			groupLayout.createParallelGroup(Alignment.TRAILING)
+				.addGroup(groupLayout.createSequentialGroup()
 					.addGap(13)
-					.addComponent(chatScroll, GroupLayout.DEFAULT_SIZE, 200, Short.MAX_VALUE)
+					.addComponent(chatScroll, GroupLayout.DEFAULT_SIZE, 197, Short.MAX_VALUE)
 					.addGap(14)
 					.addGroup(groupLayout.createParallelGroup(Alignment.BASELINE)
 						.addComponent(input, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-						.addComponent(btnSend))
+						.addComponent(btnSend, GroupLayout.PREFERRED_SIZE, 23, GroupLayout.PREFERRED_SIZE)
+						.addComponent(btnSendFile, GroupLayout.PREFERRED_SIZE, 23, GroupLayout.PREFERRED_SIZE)
+						.addComponent(btnStartGame, GroupLayout.PREFERRED_SIZE, 23, GroupLayout.PREFERRED_SIZE))
 					.addGap(12))
 		);
 		

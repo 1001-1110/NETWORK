@@ -26,7 +26,7 @@ import javax.swing.border.LineBorder;
 import javax.swing.JPanel;
 import java.awt.GridLayout;
 
-public class GroupChatView extends JFrame{
+public class RoomChatView extends JFrame{
 
 	private ClientController cc;
 	
@@ -37,8 +37,8 @@ public class GroupChatView extends JFrame{
 	private JTextArea chatBox;
 	private JList<String> userList;
 	
-	public GroupChatView(ClientController cc, String owner, ArrayList<String> participants, String participantsString) {
-		super("Group Chat: "+owner+" -> "+participantsString);
+	public RoomChatView(ClientController cc, String owner, ArrayList<String> participants, String roomName) {
+		super("Chatroom: "+owner+" -> "+roomName);
 		this.cc = cc;
 		this.owner = owner;
 		this.participants = participants;
@@ -98,15 +98,15 @@ public class GroupChatView extends JFrame{
 							.addComponent(chatInputPanel, GroupLayout.DEFAULT_SIZE, 283, Short.MAX_VALUE)
 							.addGap(7)))
 					.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
-						.addComponent(userButtonPanel, Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, 121, Short.MAX_VALUE)
-						.addComponent(userScroll, Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, 121, Short.MAX_VALUE))
+						.addComponent(userButtonPanel, Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, 123, Short.MAX_VALUE)
+						.addComponent(userScroll, Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, 123, Short.MAX_VALUE))
 					.addGap(6)
 					.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
 						.addGroup(groupLayout.createSequentialGroup()
 							.addComponent(fileScroll, GroupLayout.DEFAULT_SIZE, 121, Short.MAX_VALUE)
 							.addGap(14))
 						.addGroup(groupLayout.createSequentialGroup()
-							.addComponent(filePanel, GroupLayout.DEFAULT_SIZE, 123, Short.MAX_VALUE)
+							.addComponent(filePanel, GroupLayout.DEFAULT_SIZE, 125, Short.MAX_VALUE)
 							.addContainerGap())))
 		);
 		groupLayout.setVerticalGroup(
@@ -116,14 +116,14 @@ public class GroupChatView extends JFrame{
 						.addGroup(groupLayout.createSequentialGroup()
 							.addContainerGap()
 							.addGroup(groupLayout.createParallelGroup(Alignment.BASELINE)
-								.addComponent(userScroll, GroupLayout.DEFAULT_SIZE, 210, Short.MAX_VALUE)
-								.addComponent(fileScroll, GroupLayout.DEFAULT_SIZE, 210, Short.MAX_VALUE)))
+								.addComponent(userScroll, GroupLayout.DEFAULT_SIZE, 211, Short.MAX_VALUE)
+								.addComponent(fileScroll, GroupLayout.DEFAULT_SIZE, 211, Short.MAX_VALUE)))
 						.addGroup(groupLayout.createSequentialGroup()
 							.addGap(13)
 							.addComponent(chatScroll, GroupLayout.DEFAULT_SIZE, 209, Short.MAX_VALUE)))
 					.addPreferredGap(ComponentPlacement.RELATED)
 					.addGroup(groupLayout.createParallelGroup(Alignment.LEADING, false)
-						.addComponent(userButtonPanel, GroupLayout.PREFERRED_SIZE, 58, GroupLayout.PREFERRED_SIZE)
+						.addComponent(userButtonPanel, GroupLayout.PREFERRED_SIZE, 52, GroupLayout.PREFERRED_SIZE)
 						.addGroup(groupLayout.createParallelGroup(Alignment.LEADING, false)
 							.addComponent(chatInputPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
 							.addComponent(filePanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
@@ -153,7 +153,7 @@ public class GroupChatView extends JFrame{
 		gl_chatInputPanel.setHorizontalGroup(
 			gl_chatInputPanel.createParallelGroup(Alignment.TRAILING)
 				.addGroup(gl_chatInputPanel.createSequentialGroup()
-					.addComponent(input, GroupLayout.DEFAULT_SIZE, 208, Short.MAX_VALUE)
+					.addComponent(input, GroupLayout.DEFAULT_SIZE, 214, Short.MAX_VALUE)
 					.addPreferredGap(ComponentPlacement.RELATED)
 					.addComponent(btnSend)
 					.addGap(6))
@@ -164,7 +164,7 @@ public class GroupChatView extends JFrame{
 					.addGroup(gl_chatInputPanel.createParallelGroup(Alignment.BASELINE)
 						.addComponent(btnSend)
 						.addComponent(input, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-					.addContainerGap(32, Short.MAX_VALUE))
+					.addContainerGap(26, Short.MAX_VALUE))
 		);
 		chatInputPanel.setLayout(gl_chatInputPanel);
 		userButtonPanel.setLayout(new GridLayout(2, 0, 0, 0));
