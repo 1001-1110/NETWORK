@@ -3,29 +3,22 @@ import javax.swing.JFrame;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
-import javax.swing.JFileChooser;
 import javax.swing.JTextArea;
 import javax.swing.LayoutStyle.ComponentPlacement;
-import javax.swing.ListModel;
 import javax.swing.ListSelectionModel;
 import javax.swing.JScrollPane;
 import javax.swing.JList;
+import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 import javax.swing.border.TitledBorder;
 import javax.swing.text.DefaultCaret;
 
 import java.awt.event.ActionListener;
-import java.awt.List;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.io.File;
 import java.util.ArrayList;
 
-import javax.swing.ScrollPaneConstants;
-import javax.swing.SwingUtilities;
 import javax.swing.JPanel;
 import javax.swing.border.LineBorder;
 import java.awt.Color;
@@ -54,6 +47,18 @@ public class ClientView extends JFrame{
 	
 	public void updateOnline(String[] users) {
 		userList.setListData(users);
+	}
+	
+	private void showNotif(String notification) {
+		JOptionPane.showMessageDialog(this, notification);
+	}
+	
+	private void sendMessage(String message) {	
+		if(message.equals("/clear")) {
+			chatBox.setText("");
+		}else if(!message.equals("")){
+			cc.sendMessage(message,"all");					
+		}
 	}
 	
 	private void initialize() {
@@ -159,12 +164,8 @@ public class ClientView extends JFrame{
 			@Override
 			public void keyTyped(KeyEvent e) {
 				if(e.getKeyChar() == '\n') {
-					if(input.getText().equals("/clear")) {
-						chatBox.setText("");
-					}else {
-						cc.sendMessage(input.getText(),"all");					
-					}
-					input.setText(null);	
+					sendMessage(input.getText());
+					input.setText(null);
 				}
 			}
 		});
@@ -192,11 +193,7 @@ public class ClientView extends JFrame{
 		chatInputPanel.setLayout(gl_chatInputPanel);
 		btnSend.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				if(input.getText().equals("/clear")) {
-					chatBox.setText("");
-				}else {
-					cc.sendMessage(input.getText(),"all");					
-				}
+				sendMessage(input.getText());
 				input.setText(null);
 			}
 		});
@@ -206,23 +203,28 @@ public class ClientView extends JFrame{
 		userButtonPanel.add(btnChat);
 		btnChat.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				java.util.List<String> users = userList.getSelectedValuesList();
-				ArrayList<String> participants = new ArrayList<>();
-				for(int i = 0 ; i < users.size() ; i++) {
-					if(!users.get(i).equals(cc.getUsername()))
-						participants.add(users.get(i));
-				}
-				
-				if(participants.size() > 0) {
-					if(participants.size() > 1) {
-						participants.add(cc.getUsername());
-						cc.createGroupChat(participants);
-					}else {
-						cc.createPrivateChat(participants.get(0));
+				if(userList.getSelectedValue() != null) {
+					java.util.List<String> users = userList.getSelectedValuesList();
+					ArrayList<String> participants = new ArrayList<>();
+					for(int i = 0 ; i < users.size() ; i++) {
+						if(!users.get(i).equals(cc.getUsername()))
+							participants.add(users.get(i));
 					}
+					
+					if(participants.size() > 0) {
+						if(participants.size() > 1) {
+							participants.add(cc.getUsername());
+							cc.createGroupChat(participants);
+						}else {
+							cc.createPrivateChat(participants.get(0));
+						}
+					}
+					
+					userList.clearSelection();					
+				}else {
+					showNotif("Select an online user.");
 				}
-				
-				userList.clearSelection();
+
 			}
 		});
 		

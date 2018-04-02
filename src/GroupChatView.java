@@ -58,6 +58,14 @@ public class GroupChatView extends JFrame{
 		userList.setListData(users);
 	}	
 	
+	private void sendMessage(String message) {
+		if(message.equals("/clear")) {
+			chatBox.setText("");
+		}else if(!message.equals("")) {
+			cc.sendGroupMessage(message,participants);
+		}
+	}
+	
 	private void initialize() {
 		setBounds(100, 100, 580, 330);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -135,7 +143,7 @@ public class GroupChatView extends JFrame{
 			@Override
 			public void keyTyped(KeyEvent e) {
 				if(e.getKeyChar() == '\n') {
-					cc.sendGroupMessage(input.getText(),participants);
+					sendMessage(input.getText());
 					input.setText(null);
 				}
 			}
@@ -145,7 +153,6 @@ public class GroupChatView extends JFrame{
 		JButton btnSend = new JButton("Send");
 		btnSend.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				cc.sendGroupMessage(input.getText(),participants);
 				input.setText(null);
 			}
 		});

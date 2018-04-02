@@ -47,6 +47,15 @@ public class PrivateChatView extends JFrame{
 		chatBox.append("\n"+update);
 	}
 
+	private void sendMessage(String message) {
+		if(message.equals("/clear")) {
+			chatBox.setText("");
+		}else if(!message.equals("")) {
+			cc.sendMessage(message,recipient);
+			updateChat(owner+": "+message);
+		}
+	}	
+	
 	private void initialize() {
 		setBounds(100, 100, 620, 300);
 		setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
@@ -58,8 +67,7 @@ public class PrivateChatView extends JFrame{
 			@Override
 			public void keyTyped(KeyEvent e) {
 				if(e.getKeyChar() == '\n') {
-					cc.sendMessage(input.getText(),recipient);
-					updateChat(owner+": "+input.getText());
+					sendMessage(input.getText());
 					input.setText(null);
 				}
 			}
@@ -69,8 +77,7 @@ public class PrivateChatView extends JFrame{
 		JButton btnSend = new JButton("Send");
 		btnSend.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				cc.sendMessage(input.getText(),recipient);
-				updateChat(owner+": "+input.getText());
+				sendMessage(input.getText());
 				input.setText(null);
 			}
 		});

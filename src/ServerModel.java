@@ -13,16 +13,20 @@ public class ServerModel {
 		return onlineusers.get(i);
 	}
 	
-	public ChatRoom getRoom(int i) {
-		return chatrooms.get(i);
-	}
-	
 	public void removeUser(int i) {
 		onlineusers.remove(i);
 	}
 	
+	public void addRoom(ChatRoom cr) {
+		chatrooms.add(cr);
+	}	
+	
+	public ChatRoom getRoom(int i) {
+		return chatrooms.get(i);
+	}
+	
 	public void removeRoom(int i) {
-		chatrooms.get(i);
+		chatrooms.remove(i);
 	}
 	
 	public int getNumOfUsers() {

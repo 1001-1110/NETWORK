@@ -5,6 +5,8 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.ArrayList;
 
+import packets.OnlineList;
+
 public class ClientController {
 	
 	private ClientView cv;

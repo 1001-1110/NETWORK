@@ -5,6 +5,8 @@ import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+import packets.OnlineList;
+
 public class ServerController {
 	
 	private ServerModel sm;
@@ -12,8 +14,13 @@ public class ServerController {
 	
 	private final String helpMessage = ""
 			+ "## HELP ##\n"
+			+ "==========\n"
 			+ "To create a private chat, select a user in 'Online Users' then press 'Private Chat'\n"
-			+ "To create a group chat, select multiple users in 'Online Users' by shift-clicking then press 'Private Chat'\n";
+			+ "To create a group chat, select multiple users in 'Online Users' by shift-clicking then press 'Private Chat'\n"
+			+ "Chat commands:\n"
+			+ "/help : shows this help message\n"
+			+ "/clear : clears the chat\n"
+			+ "==========";
 	
     public ServerController(int port){
     	sv = new ServerView(port);

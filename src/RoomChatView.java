@@ -57,6 +57,15 @@ public class RoomChatView extends JFrame{
 	public void updateParticipants(String[] users) {
 		userList.setListData(users);
 	}	
+
+	private void sendMessage(String message) {
+		if(message.equals("/clear")) {
+			chatBox.setText("");
+		}else if(!message.equals("")) {
+			//cc.sendMessage(message,recipient);
+			updateChat(owner+": "+message);
+		}
+	}		
 	
 	private void initialize() {
 		setBounds(100, 100, 580, 330);
@@ -135,7 +144,7 @@ public class RoomChatView extends JFrame{
 			@Override
 			public void keyTyped(KeyEvent e) {
 				if(e.getKeyChar() == '\n') {
-					cc.sendGroupMessage(input.getText(),participants);
+					sendMessage(input.getText());
 					input.setText(null);
 				}
 			}
@@ -145,7 +154,7 @@ public class RoomChatView extends JFrame{
 		JButton btnSend = new JButton("Send");
 		btnSend.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				cc.sendGroupMessage(input.getText(),participants);
+				sendMessage(input.getText());
 				input.setText(null);
 			}
 		});
