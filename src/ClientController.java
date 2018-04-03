@@ -5,6 +5,8 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.ArrayList;
 
+import packets.GroupMessage;
+import packets.Message;
 import packets.OnlineList;
 
 public class ClientController {
