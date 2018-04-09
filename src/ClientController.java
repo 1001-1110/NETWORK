@@ -5,6 +5,8 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.ArrayList;
 
+import packets.ChatRoomAction;
+import packets.ChatRoomList;
 import packets.GroupMessage;
 import packets.Message;
 import packets.OnlineList;
@@ -18,6 +20,7 @@ public class ClientController {
 	private ObjectOutputStream output;
 	private ArrayList<PrivateChatView> privateChats;
 	private ArrayList<GroupChatView> groupChats;
+	private ArrayList<RoomChatView> roomChats;
 	
     public ClientController(String serverIP, int port, String username){
     	cv = new ClientView(this,username);
@@ -53,6 +56,15 @@ public class ClientController {
     	}
     	groupChats.add(new GroupChatView(this,this.username,participants,participantsString));
     } 
+    
+    public void createRoomChat(String roomName) {
+    	for(int i = 0 ; i < roomChats.size() ; i++) {
+    		if(roomChats.get(i).getRoomName().equals(roomName)) {
+    			
+    		}
+
+    	}    	
+    }
     
     private void receivePrivateChat(Message message) {
     	for(int i = 0 ; i < privateChats.size() ; i++) {
@@ -122,17 +134,36 @@ public class ClientController {
     		            			cv.updateChat(((Message) o).getSender()+": "+((Message) o).getContent());
     		            		else
     		            			receivePrivateChat((Message) o);
-    		            	}else if(o instanceof OnlineList) {
-    		            		cv.updateOnline(((OnlineList) o).getUsers());
     		            	}else if(o instanceof GroupMessage) {
     		            		receiveGroupChat((GroupMessage) o);
+    		            	}else if(o instanceof ChatRoomAction) {
+    		            		if(((ChatRoomAction) o).getSender().equals("Create")) {
+    		            			if(((ChatRoomAction) o).getAction())
+    		            				cv.showNotif("Room created.");
+    		            			else if(!((ChatRoomAction) o).getAction())
+    		            				cv.showErrorNotif(((ChatRoomAction) o).getRoomName()+" already exists.", "Existing room");
+    		            		}else if(((ChatRoomAction) o).getSender().equals("Delete")) {
+    		            			if(((ChatRoomAction) o).getAction())
+    		            				cv.showNotif("Room deleted.");
+    		            			else if(!((ChatRoomAction) o).getAction())
+    		            				cv.showErrorNotif("Invalid password", "Invalid");   		            			
+    		            		}else if(((ChatRoomAction) o).getSender().equals("Join")) {
+    		            			if(((ChatRoomAction) o).getAction())
+    		            				cv.showNotif("Room joined.");
+    		            			else if(!((ChatRoomAction) o).getAction())
+    		            				cv.showErrorNotif("Invalid password", "Invalid");   		            			
+    		            		}
+    		            	}else if(o instanceof OnlineList) {
+    		            		cv.updateOnline(((OnlineList) o).getUsers());
+    		            	}else if(o instanceof ChatRoomList) {
+    		            		cv.updateRooms(((ChatRoomList) o).getChatRoomList());
     		            	}
     		            }
-    		        } catch(Exception ex) {
+    		        } catch(IOException ex) {
     		        	cv.updateChat("Lost connection with server.");
     		        	ex.printStackTrace();
     		        	isRunning = false;
-    		        }         				
+    		        } catch (ClassNotFoundException e) {}         				
     			}
     		}
     	};  
@@ -156,6 +187,22 @@ public class ClientController {
     		} catch (IOException e) {}       		
     	}
     }
+    
+    public void sendChatRoomCreation(String roomName, String password) {
+    	if(roomName != null) {
+    	    try {
+    			output.writeObject(new ChatRoomAction(roomName, password, username, true));
+    		} catch (IOException e) {}       		
+    	}
+    }
+
+    public void sendChatRoomDeletion(String roomName, String password) {
+    	if(roomName != null) {
+    	    try {
+    			output.writeObject(new ChatRoomAction(roomName, password, username, false));
+    		} catch (IOException e) {}       		
+    	}    	
+    }    
     
     public String getUsername() {
     	return username;

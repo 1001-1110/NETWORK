@@ -5,6 +5,8 @@ import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+import packets.ChatRoomAction;
+import packets.ChatRoomList;
 import packets.GroupMessage;
 import packets.Message;
 import packets.OnlineList;
@@ -154,13 +156,22 @@ public class ServerController {
     		            			}
     		            	}else if(o instanceof GroupMessage) {
     		            		groupSend((GroupMessage) o);
+    		            	}else if(o instanceof ChatRoomAction) {
+    		            		if(((ChatRoomAction) o).getAction()) {
+    		            			createChatRoom((ChatRoomAction) o);
+    		            		}else {
+    		            			deleteChatRoom((ChatRoomAction) o);
+    		            		}
     		            	}
     		            }
-    		        } catch(Exception ex) {
+    		        } catch(IOException ex) {
+    		        	ex.printStackTrace();
     		        	try {
 							user.getSocket().close();
 						} catch (IOException e) {}
     		        	isRunning = false;
+    		        } catch (ClassNotFoundException e) {
+    		        	e.printStackTrace();
     		        }       				
     			}
     		}
@@ -169,6 +180,76 @@ public class ServerController {
     	userThread.start();
     	
     }
+    
+    private void createChatRoom(ChatRoomAction cra) {
+    	boolean valid = true;
+    	for(int i = 0 ; i < sm.getNumOfChatRooms() && valid ; i++) {
+    		if(sm.getRoom(i).getRoomName().equals(cra.getRoomName())) {
+    			valid = false;
+    		}
+    	}
+    	if(valid) 
+		sm.addRoom(new ChatRoom(cra.getRoomName(), cra.getPassword()));
+		String chatRoomList[] = new String[sm.getNumOfChatRooms()];
+		int numOfParticipants[] = new int[sm.getNumOfChatRooms()];
+    	if(valid) {
+    		for(int i = 0 ; i < sm.getNumOfChatRooms() ; i++) {
+    			chatRoomList[i] = sm.getRoom(i).getRoomName()+"\n ("+sm.getRoom(i).getNumOfParticipants()+" participants)";
+    		}
+    		sv.updateRooms(chatRoomList);
+    	}
+		for(int j = 0 ; j < sm.getNumOfUsers() ; j++) {
+			if(sm.getUser(j).getUsername().equals(cra.getSender())){
+				try {
+			    	if(valid) {
+						sm.getUser(j).getOutput().writeObject(new ChatRoomAction(cra.getRoomName(), cra.getPassword(), "Create", true));
+			    	}else {
+						sm.getUser(j).getOutput().writeObject(new ChatRoomAction(cra.getRoomName(), cra.getPassword(), "Create", false));
+			    	}					
+				} catch (IOException e) {}
+			}
+			if(valid) {
+				try {
+					sm.getUser(j).getOutput().writeObject(new ChatRoomList(chatRoomList,numOfParticipants));
+				} catch (IOException e) {}
+			}
+		}
+    }
+
+    private void deleteChatRoom(ChatRoomAction cra) {
+    	boolean valid = false;
+    	for(int i = 0 ; i < sm.getNumOfChatRooms() && !valid ; i++) {
+    		System.out.println(sm.getRoom(i).getRoomName() + " = "+cra.getRoomName());
+    		if(sm.getRoom(i).getRoomName().equals(cra.getRoomName()) && sm.getRoom(i).getPassword().equals(cra.getPassword())) {
+	    		sm.removeRoom(i);
+    			valid = true;
+    		}
+    	}
+		String chatRoomList[] = new String[sm.getNumOfChatRooms()];
+		int numOfParticipants[] = new int[sm.getNumOfChatRooms()];
+    	if(valid) {
+    		sv.updateRooms(chatRoomList);
+    		for(int i = 0 ; i < sm.getNumOfChatRooms() ; i++) {
+    			chatRoomList[i] = sm.getRoom(i).getRoomName();
+    		}
+    	}
+		for(int j = 0 ; j < sm.getNumOfUsers() ; j++) {
+			if(sm.getUser(j).getUsername().equals(cra.getSender())){
+				try {
+			    	if(valid) {
+						sm.getUser(j).getOutput().writeObject(new ChatRoomAction(cra.getRoomName(), cra.getPassword(), "Delete", true));
+			    	}else {
+						sm.getUser(j).getOutput().writeObject(new ChatRoomAction(cra.getRoomName(), cra.getPassword(), "Delete", false));
+			    	}					
+				} catch (IOException e) {}
+			}
+			if(valid) {
+				try {
+					sm.getUser(j).getOutput().writeObject(new ChatRoomList(chatRoomList, numOfParticipants));
+				} catch (IOException e) {}
+			}
+		}    	
+    }    
     
     private void updateUsers() {
     	String[] onlineUsers = new String[sm.getNumOfUsers()];
@@ -216,7 +297,7 @@ public class ServerController {
 		        output.writeObject(message);
 			} catch (IOException e) {} 		
     	}
-        sv.updateChat(message.getSender()+": "+message.getContent());
+        sv.updateChat("[Global Chat] "+message.getSender()+": "+message.getContent());
     }
     
     private void specificSend(Message message) {
@@ -242,7 +323,7 @@ public class ServerController {
     			} catch (IOException e) {} 	    			
     		}
     	}
-        sv.updateChat("[Group Chat]"+" "+groupMessage.getSender()+": "+groupMessage.getContent());
+        sv.updateChat("[Group Chat] "+groupMessage.getSender()+": "+groupMessage.getContent());
     }   
     
 }

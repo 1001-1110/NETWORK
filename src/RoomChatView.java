@@ -31,31 +31,32 @@ public class RoomChatView extends JFrame{
 	private ClientController cc;
 	
 	private String owner;
-	private ArrayList<String> participants;
+	private String roomName;
 	
 	private JTextField input;
 	private JTextArea chatBox;
 	private JList<String> userList;
 	
-	public RoomChatView(ClientController cc, String owner, ArrayList<String> participants, String roomName) {
+	public RoomChatView(ClientController cc, String owner, String[] participants, String roomName) {
 		super("Chatroom: "+owner+" -> "+roomName);
 		this.cc = cc;
 		this.owner = owner;
-		this.participants = participants;
+		this.roomName = roomName;
 		initialize();
+		this.userList.setListData(participants);
 		this.setVisible(true);
 	}
 	
-	public ArrayList<String> getNames() {
-		return participants;
+	public String getRoomName() {
+		return roomName;
 	}
-	
+
 	public void updateChat(String update) {
 		chatBox.append("\n"+update);
 	}
 
-	public void updateParticipants(String[] users) {
-		userList.setListData(users);
+	public void updateParticipants(String[] participants) {
+		userList.setListData(participants);
 	}	
 
 	private void sendMessage(String message) {
@@ -194,10 +195,6 @@ public class RoomChatView extends JFrame{
 		caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
 		
 		chatScroll.setViewportView(chatBox);
-		
-		String[] users = new String[participants.size()];
-		for(int i = 0 ; i < participants.size(); i++)
-			users[i] = participants.get(i);
 		
 		userList = new JList<String>();
 		userList.setBorder(new TitledBorder(UIManager.getBorder("TitledBorder.border"), "Participants", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));

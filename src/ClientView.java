@@ -26,6 +26,11 @@ import java.awt.GridLayout;
 
 public class ClientView extends JFrame{
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
 	private ClientController cc;
 	
 	private JTextField input;
@@ -48,9 +53,21 @@ public class ClientView extends JFrame{
 	public void updateOnline(String[] users) {
 		userList.setListData(users);
 	}
+
+	public void updateRooms(String[] rooms) {
+		roomList.setListData(rooms);
+	}	
 	
-	private void showNotif(String notification) {
+	public void showNotif(String notification) {
 		JOptionPane.showMessageDialog(this, notification);
+	}
+	
+	public void showErrorNotif(String notification, String header) {
+		JOptionPane.showMessageDialog(this,notification,header,JOptionPane.ERROR_MESSAGE);	
+	}
+	
+	private String showInputNotif(String notification) {
+		return JOptionPane.showInputDialog(this, notification);
 	}
 	
 	private void sendMessage(String message) {	
@@ -62,7 +79,7 @@ public class ClientView extends JFrame{
 	}
 	
 	private void initialize() {
-		setBounds(100, 100, 860, 330);
+		setBounds(100, 100, 860, 320);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
 		try {
@@ -129,16 +146,16 @@ public class ClientView extends JFrame{
 						.addComponent(chatInputPanel, GroupLayout.PREFERRED_SIZE, 337, Short.MAX_VALUE))
 					.addPreferredGap(ComponentPlacement.RELATED)
 					.addGroup(groupLayout.createParallelGroup(Alignment.TRAILING)
-						.addComponent(roomPanel, GroupLayout.DEFAULT_SIZE, 170, Short.MAX_VALUE)
-						.addComponent(roomButtonPanel, GroupLayout.DEFAULT_SIZE, 170, Short.MAX_VALUE))
+						.addComponent(roomButtonPanel, GroupLayout.DEFAULT_SIZE, 170, Short.MAX_VALUE)
+						.addComponent(roomPanel, GroupLayout.DEFAULT_SIZE, 170, Short.MAX_VALUE))
 					.addPreferredGap(ComponentPlacement.RELATED)
 					.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
 						.addComponent(userPanel, GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE)
 						.addComponent(userButtonPanel, GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE))
 					.addPreferredGap(ComponentPlacement.RELATED)
 					.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
-						.addComponent(filePanel, GroupLayout.DEFAULT_SIZE, 145, Short.MAX_VALUE)
-						.addComponent(fileButtonPanel, GroupLayout.DEFAULT_SIZE, 142, Short.MAX_VALUE))
+						.addComponent(fileButtonPanel, GroupLayout.DEFAULT_SIZE, 145, Short.MAX_VALUE)
+						.addComponent(filePanel, GroupLayout.DEFAULT_SIZE, 145, Short.MAX_VALUE))
 					.addContainerGap())
 		);
 		groupLayout.setVerticalGroup(
@@ -146,18 +163,21 @@ public class ClientView extends JFrame{
 				.addGroup(groupLayout.createSequentialGroup()
 					.addContainerGap()
 					.addGroup(groupLayout.createParallelGroup(Alignment.BASELINE)
-						.addComponent(chatPanel, GroupLayout.DEFAULT_SIZE, 237, Short.MAX_VALUE)
-						.addComponent(userPanel, GroupLayout.DEFAULT_SIZE, 237, Short.MAX_VALUE)
-						.addComponent(filePanel, GroupLayout.DEFAULT_SIZE, 237, Short.MAX_VALUE)
-						.addComponent(roomPanel, GroupLayout.DEFAULT_SIZE, 237, Short.MAX_VALUE))
+						.addComponent(chatPanel, GroupLayout.DEFAULT_SIZE, 198, Short.MAX_VALUE)
+						.addComponent(userPanel, GroupLayout.DEFAULT_SIZE, 198, Short.MAX_VALUE)
+						.addComponent(filePanel, GroupLayout.DEFAULT_SIZE, 198, Short.MAX_VALUE)
+						.addComponent(roomPanel, GroupLayout.DEFAULT_SIZE, 198, Short.MAX_VALUE))
 					.addGap(5)
-					.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
-						.addComponent(userButtonPanel, GroupLayout.PREFERRED_SIZE, 67, GroupLayout.PREFERRED_SIZE)
-						.addComponent(roomButtonPanel, GroupLayout.PREFERRED_SIZE, 43, GroupLayout.PREFERRED_SIZE)
+					.addGroup(groupLayout.createParallelGroup(Alignment.LEADING, false)
+						.addComponent(userButtonPanel, GroupLayout.PREFERRED_SIZE, 67, Short.MAX_VALUE)
 						.addComponent(chatInputPanel, GroupLayout.PREFERRED_SIZE, 28, GroupLayout.PREFERRED_SIZE)
-						.addComponent(fileButtonPanel, GroupLayout.PREFERRED_SIZE, 43, GroupLayout.PREFERRED_SIZE))
+						.addComponent(roomButtonPanel, 0, 0, Short.MAX_VALUE)
+						.addComponent(fileButtonPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
 					.addGap(10))
 		);
+		
+		JButton btnDeleteFile = new JButton("Delete");
+		fileButtonPanel.add(btnDeleteFile);
 		
 		input = new JTextField();
 		input.addKeyListener(new KeyAdapter() {
@@ -236,10 +256,50 @@ public class ClientView extends JFrame{
 		roomButtonPanel.setLayout(new GridLayout(0, 1, 5, 5));
 		
 		JButton btnCreate = new JButton("Create");
+		btnCreate.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				String roomName = showInputNotif("Enter chatroom name: ");
+				if(roomName != null) {
+					String password = showInputNotif("Enter chatroom password: ");
+					if(password != null) {
+						roomName = roomName.trim();
+						if(!roomName.equals("")) {
+							if(!password.contains(" ")) {
+								cc.sendChatRoomCreation(roomName, password);
+							}else {
+								showErrorNotif("Invalid password.","Invalid");
+							}
+						}else {
+							showErrorNotif("Invalid room name.","Invalid");
+						}						
+					}
+				}
+			}
+		});
 		roomButtonPanel.add(btnCreate);
 		
 		JButton btnJoin = new JButton("Join");
 		roomButtonPanel.add(btnJoin);
+		
+		JButton btnDeleteChatRoom = new JButton("Delete");
+		btnDeleteChatRoom.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if(roomList.getSelectedValue() != null) {
+					String password = showInputNotif("Enter password: ");
+					if(password != null) {
+						if(!password.contains(" ")) {
+							String roomName[] = roomList.getSelectedValue().split("\n");
+							cc.sendChatRoomDeletion(roomName[0], password);							
+						}else {
+							showErrorNotif("Invalid password.","Invalid");
+						}
+					}
+				}else {
+					showNotif("Select a room.");
+				}				
+			}
+		});
+		roomButtonPanel.add(btnDeleteChatRoom);
 		
 		JScrollPane roomScroll = new JScrollPane();
 		GroupLayout gl_roomPanel = new GroupLayout(roomPanel);

@@ -19,7 +19,7 @@ public class ServerModel {
 	
 	public void addRoom(ChatRoom cr) {
 		chatrooms.add(cr);
-	}	
+	}
 	
 	public ChatRoom getRoom(int i) {
 		return chatrooms.get(i);
@@ -32,6 +32,10 @@ public class ServerModel {
 	public int getNumOfUsers() {
 		return onlineusers.size();
 	}
+	
+	public int getNumOfChatRooms() {
+		return chatrooms.size();
+	}	
 	
 	public int getRooms() {
 		return chatrooms.size();

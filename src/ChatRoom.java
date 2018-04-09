@@ -9,6 +9,7 @@ public class ChatRoom {
 	public ChatRoom(String roomName, String password) {
 		this.roomName = roomName;
 		this.password = password;
+		this.participants = new ArrayList<>();
 	}
 	
 	public void addParticipant(String participant) {
@@ -22,7 +23,11 @@ public class ChatRoom {
 	public ArrayList<String> getParticipants() {
 		return participants;
 	}
-
+	
+	public int getNumOfParticipants() {
+		return participants.size();
+	}
+	
 	public String getRoomName() {
 		return roomName;
 	}
