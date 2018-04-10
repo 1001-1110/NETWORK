@@ -3,6 +3,7 @@ import javax.swing.JFrame;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JTextArea;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.JScrollPane;
@@ -17,6 +18,7 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.File;
 import java.util.ArrayList;
 
 import javax.swing.ScrollPaneConstants;
@@ -74,7 +76,7 @@ public class GroupChatView extends JFrame{
 	}
 	
 	private void initialize() {
-		setBounds(100, 100, 580, 330);
+		setBounds(100, 100, 450, 330);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
 		try {
@@ -85,18 +87,7 @@ public class GroupChatView extends JFrame{
 		
 		JScrollPane userScroll = new JScrollPane();
 		
-		JScrollPane fileScroll = new JScrollPane();
-		
 		JPanel userButtonPanel = new JPanel();
-		
-		JPanel filePanel = new JPanel();
-		filePanel.setLayout(new GridLayout(2, 0, 0, 0));
-		
-		JButton btnDownload = new JButton("Download");
-		filePanel.add(btnDownload);
-		
-		JButton btnUpload = new JButton("Upload");
-		filePanel.add(btnUpload);
 		
 		JPanel chatInputPanel = new JPanel();
 
@@ -115,14 +106,7 @@ public class GroupChatView extends JFrame{
 					.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
 						.addComponent(userButtonPanel, Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, 121, Short.MAX_VALUE)
 						.addComponent(userScroll, Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, 121, Short.MAX_VALUE))
-					.addGap(6)
-					.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
-						.addGroup(groupLayout.createSequentialGroup()
-							.addComponent(fileScroll, GroupLayout.DEFAULT_SIZE, 121, Short.MAX_VALUE)
-							.addGap(14))
-						.addGroup(groupLayout.createSequentialGroup()
-							.addComponent(filePanel, GroupLayout.DEFAULT_SIZE, 123, Short.MAX_VALUE)
-							.addContainerGap())))
+					.addGap(11))
 		);
 		groupLayout.setVerticalGroup(
 			groupLayout.createParallelGroup(Alignment.LEADING)
@@ -130,18 +114,14 @@ public class GroupChatView extends JFrame{
 					.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
 						.addGroup(groupLayout.createSequentialGroup()
 							.addContainerGap()
-							.addGroup(groupLayout.createParallelGroup(Alignment.BASELINE)
-								.addComponent(userScroll, GroupLayout.DEFAULT_SIZE, 210, Short.MAX_VALUE)
-								.addComponent(fileScroll, GroupLayout.DEFAULT_SIZE, 210, Short.MAX_VALUE)))
+							.addComponent(userScroll, GroupLayout.DEFAULT_SIZE, 204, Short.MAX_VALUE))
 						.addGroup(groupLayout.createSequentialGroup()
 							.addGap(13)
-							.addComponent(chatScroll, GroupLayout.DEFAULT_SIZE, 209, Short.MAX_VALUE)))
+							.addComponent(chatScroll, GroupLayout.DEFAULT_SIZE, 203, Short.MAX_VALUE)))
 					.addPreferredGap(ComponentPlacement.RELATED)
 					.addGroup(groupLayout.createParallelGroup(Alignment.LEADING, false)
 						.addComponent(userButtonPanel, GroupLayout.PREFERRED_SIZE, 58, GroupLayout.PREFERRED_SIZE)
-						.addGroup(groupLayout.createParallelGroup(Alignment.LEADING, false)
-							.addComponent(chatInputPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-							.addComponent(filePanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+						.addComponent(chatInputPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
 					.addContainerGap())
 		);
 		
@@ -184,14 +164,26 @@ public class GroupChatView extends JFrame{
 		userButtonPanel.setLayout(new GridLayout(2, 0, 0, 0));
 		
 		JButton btnSendFile = new JButton("Send File");
+		btnSendFile.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if(userList.getSelectedValue() != null) {
+					File file;
+					if((file = cc.showFileChooser(JFileChooser.FILES_ONLY)) != null) {
+						if(file.exists()) {
+							cc.sendFileUploadRequest(file, userList.getSelectedValue());
+						}else {
+							cc.showErrorNotif("File does not exist","Invalid");
+						}
+					}
+				}else {
+					cc.showNotif("Select an online user.");	
+				}	
+			}
+		});
 		userButtonPanel.add(btnSendFile);
 		
 		JButton btnStartGame = new JButton("Start Game");
 		userButtonPanel.add(btnStartGame);
-		
-		JList<String> fileList = new JList<String>();
-		fileList.setBorder(new TitledBorder(new LineBorder(new Color(184, 207, 229)), "Files", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
-		fileScroll.setViewportView(fileList);
 		
 		chatBox = new JTextArea();
 		chatBox.setEditable(false);

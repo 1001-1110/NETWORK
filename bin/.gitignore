@@ -13,3 +13,6 @@
 /ServerController$FileSender.class
 /ClientView$8.class
 /ClientView$9.class
+/GroupChatView$3.class
+/PrivateChatView$3.class
+/RoomChatView$3.class

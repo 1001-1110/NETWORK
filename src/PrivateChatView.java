@@ -3,6 +3,7 @@ import javax.swing.JFrame;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JTextArea;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.JScrollPane;
@@ -18,6 +19,7 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.File;
 
 public class PrivateChatView extends JFrame{
 
@@ -90,6 +92,18 @@ public class PrivateChatView extends JFrame{
 		});
 		
 		btnSendFile = new JButton("Send File");
+		btnSendFile.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				File file;
+				if((file = cc.showFileChooser(JFileChooser.FILES_ONLY)) != null) {
+					if(file.exists()) {
+						cc.sendFileUploadRequest(file, recipient);
+					}else {
+						cc.showErrorNotif("File does not exist","Invalid");
+					}
+				}
+			}
+		});
 		
 		btnStartGame = new JButton("Start Game");
 

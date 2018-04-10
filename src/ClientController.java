@@ -142,6 +142,18 @@ public class ClientController {
     	return true;
     }
     
+	public File showFileChooser(int selectionMode) {
+		return cv.showFileChooser(selectionMode);
+	}
+    
+	public void showErrorNotif(String notification, String header) {
+		cv.showErrorNotif(notification, header);
+	}
+	
+	public void showNotif(String notification) {
+		cv.showNotif(notification);
+	}
+	
     private void connectSocket(String serverIP, int port, String username) {
     	
     	try {
