@@ -39,6 +39,10 @@ public class ServerView extends JFrame{
 		roomList.setListData(rooms);
 	}	
 	
+	public void updateFiles(String[] files) {
+		fileList.setListData(files);
+	}
+	
 	private void initialize() {
 		setBounds(100, 100, 670, 300);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

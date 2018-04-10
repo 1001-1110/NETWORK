@@ -9,3 +9,7 @@
 /FileTransferView.class
 /ClientController$FileReceiver.class
 /ClientController$FileSender.class
+/ServerController$FileReceiver.class
+/ServerController$FileSender.class
+/ClientView$8.class
+/ClientView$9.class

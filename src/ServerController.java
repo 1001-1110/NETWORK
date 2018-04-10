@@ -1,9 +1,14 @@
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
 
 import packets.ChatRoomAction;
 import packets.ChatRoomList;
@@ -12,6 +17,7 @@ import packets.ChatRoomRequest;
 import packets.ChatRoomUserList;
 import packets.FileContent;
 import packets.FileHeader;
+import packets.FileList;
 import packets.GroupMessage;
 import packets.Message;
 import packets.OnlineList;
@@ -20,6 +26,8 @@ public class ServerController {
 	
 	private ServerModel sm;
 	private ServerView sv;
+	private ArrayList<FileSender> fileSenders;
+	private ArrayList<FileReceiver> fileReceivers;
 	
 	private final String helpMessage = ""
 			+ "## HELP ##\n"
@@ -35,10 +43,13 @@ public class ServerController {
     public ServerController(int port){
     	sv = new ServerView(port);
     	sm = new ServerModel();
+    	fileSenders = new ArrayList<>();
+    	fileReceivers = new ArrayList<>();
     	if(checkPort(port)) {
     		createSocket(port);
     		maintainUpdates();    		
     	}
+    	updateFiles();
     }
     
     private boolean checkPort(int port) {
@@ -111,6 +122,7 @@ public class ServerController {
         		            userStartThread(user);
         		            updateUsers(); 
         		            updateRooms();
+        		            updateFiles();
     		            }else {
     		            	output.writeObject("Username already taken. Connection rejected.");
     		            }
@@ -119,6 +131,7 @@ public class ServerController {
     		        } catch(Exception ex) {
     		        	sv.updateChat("Server port unavailable. Server cannot be initialized.");
     		        	isRunning = false;
+    		        	ex.printStackTrace();
     		        }
     			}
     		}
@@ -178,9 +191,31 @@ public class ServerController {
     		            			unJoinChatRoom((ChatRoomRequest) o);
     		            		}
     		            	}else if(o instanceof FileHeader) {
-    		            		fileHeaderSend((FileHeader) o);
+    		            		if(((FileHeader) o).getReceiver().equals("Server")) {
+    		            			if(((FileHeader) o).getRequest().equals("Upload")) {
+        		            			File file = new File(System.getProperty("user.dir"));
+        		            			fileReceivers.add(new FileReceiver(file, ((FileHeader) o).getSourceFile(), ((FileHeader) o).getSender(), ((FileHeader) o).getMaxBytes()));
+        		            			user.getOutput().writeObject(new FileHeader(((FileHeader) o).getSourceFile(), file, "Server", ((FileHeader) o).getSender(), "Download", ((FileHeader) o).getMaxBytes(), true));
+    		            			}else if(((FileHeader) o).getRequest().equals("Download")) {
+    		            				File file = new File(System.getProperty("user.dir")+"\\"+((FileHeader) o).getSourceFile().getName());
+    		            				for(int i = 0 ; i < sm.getNumOfUsers() ; i++) {
+    		            					if(sm.getUser(i).getUsername().equals(((FileHeader) o).getSender())) {
+    		            						FileSender fileSender = new FileSender(file, ((FileHeader) o).getSender(), sm.getUser(i).getOutput());
+    		            						fileSender.setDestFile(((FileHeader) o).getDestFile());
+    		            						fileSender.start();
+    	    		            				fileSenders.add(fileSender);
+    		            					}
+    		            				}
+    		            			}
+    		            		}else {
+        		            		fileHeaderSend((FileHeader) o);
+    		            		}
     		            	}else if(o instanceof FileContent) {
-    		            		fileContentSend((FileContent) o);
+    		            		if(((FileContent) o).getReceiver().equals("Server")) {
+    		            			receiveFileContent((FileContent) o);
+    		            		}else {
+    		            			fileContentSend((FileContent) o);
+    		            		}
     		            	}
     		            }
     		        } catch(IOException ex) {
@@ -347,7 +382,20 @@ public class ServerController {
     	sv.updateOnline(onlineUsers);
     	
     }
+    
+    private void updateFiles() {
+    	File file = new File(System.getProperty("user.dir"));	
+    	
+    	for(int i = 0 ; i < sm.getNumOfUsers() ; i++) {
+			try {
+		        sm.getUser(i).getOutput().writeObject(new FileList(file.listFiles(),System.getProperty("user.dir")));
+			} catch (IOException e) {} 		
+    	}   
+    	
+    	sv.updateFiles(new FileList(file.listFiles(),System.getProperty("user.dir")).getFiles());
 
+    }
+    
     private void announce(String announcement) {
     	for(int i = 0 ; i < sm.getNumOfUsers() ; i++) {
 			try {
@@ -444,6 +492,129 @@ public class ServerController {
 				}
     		}
     	}
+    }
+
+    private void receiveFileContent(FileContent fileContent) {
+    	for(int i = 0 ; i < fileReceivers.size() ; i++) {
+    		if(fileReceivers.get(i).getSender().equals(fileContent.getSender()) && 
+    				fileReceivers.get(i).getSourceFile().equals(fileContent.getSourceFile()) && 
+    	    				fileReceivers.get(i).getDestFile().equals(fileContent.getDestFile())) {
+    			if(fileContent.getContent().length == 0) {
+    				fileReceivers.get(i).finishWrite();
+    			}else {
+        			fileReceivers.get(i).writeBytes(fileContent.getContent());
+    			}
+    		}
+    	}
+    }    
+    
+    class FileReceiver{
+    	
+    	private FileOutputStream fos;
+    	private String sender;
+    	private File sourceFile;
+    	private File destFile;
+    	
+    	public FileReceiver(File destFile, File sourceFile, String sender, int maxBytes) {
+    		try {
+				fos = new FileOutputStream(destFile.getAbsolutePath()+"\\"+sourceFile.getName());
+				this.sender = sender;
+				this.sourceFile = sourceFile;
+				this.destFile = destFile;
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			}
+    	}
+    	
+    	public String getSender() {
+			return sender;
+		}
+
+		public File getSourceFile() {
+			return sourceFile;
+		}
+
+		public File getDestFile() {
+			return destFile;
+		}
+		
+		public void writeBytes(byte content[]) {
+    		try {
+				fos.write(content);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+    	}
+    	
+    	public void finishWrite() {
+    		try {
+				fos.close();
+				updateFiles();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+    	}
+    	
+    }
+    
+    class FileSender extends Thread{
+    	
+    	private FileInputStream fis;
+    	private String receiver;
+    	private File sourceFile;
+    	private File destFile;
+    	private ObjectOutputStream output;
+    	
+    	public FileSender(File sourceFile, String receiver, ObjectOutputStream output) {
+    		this.sourceFile = sourceFile;
+    		this.receiver = receiver; 
+    		this.output = output;
+    	}
+    	
+		public String getReceiver() {
+			return receiver;
+		}
+
+		public File getSourceFile() {
+			return sourceFile;
+		}
+		
+		public void setDestFile(File destFile) {
+			this.destFile = destFile;
+		}
+
+		public File getDestFile() {
+			return destFile;
+		}
+		
+		public void run() {
+    		try {
+				fis = new FileInputStream(sourceFile);
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			}			
+    		try {
+    			int progress = 0;
+				while(fis.available() > 0) {
+					int buffer;
+					if(fis.available() <= 1024) {
+						buffer = fis.available();
+					}else {
+						buffer = 1024;
+					}
+					progress += buffer;
+					byte content[] = new byte[buffer];
+					fis.read(content);
+					output.writeObject(new FileContent(sourceFile, destFile, "Server", receiver, progress, content));
+				}
+				byte content[] = new byte[0];
+				output.writeObject(new FileContent(sourceFile, destFile, "Server", receiver, progress, content));
+				fis.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+    	
     }
     
 }

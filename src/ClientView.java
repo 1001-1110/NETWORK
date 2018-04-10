@@ -39,6 +39,7 @@ public class ClientView extends JFrame{
 	private JList<String> userList;
 	private JList<String> roomList;
 	private JList<String> fileList;
+	private int fileSizes[];
 	private JTextArea chatBox;
 	
 	public ClientView(ClientController cc, String owner) {
@@ -59,6 +60,11 @@ public class ClientView extends JFrame{
 	public void updateRooms(String[] rooms) {
 		roomList.setListData(rooms);
 	}	
+	
+	public void updateFiles(String[] files, int fileSizes[]) {
+		fileList.setListData(files);
+		this.fileSizes = fileSizes;
+	}
 	
 	public void showNotif(String notification) {
 		JOptionPane.showMessageDialog(this, notification);
@@ -147,9 +153,37 @@ public class ClientView extends JFrame{
 		fileButtonPanel.setLayout(new GridLayout(0, 1, 5, 5));
 		
 		JButton btnDownload = new JButton("Download");
+		btnDownload.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if(fileList.getSelectedValue() != null) {
+					File file;
+					if((file = showFileChooser(JFileChooser.DIRECTORIES_ONLY)) != null) {
+						if(file.exists()) {
+							cc.sendFileDownloadRequest(file, fileList.getSelectedValue(), fileSizes[fileList.getSelectedIndex()]);
+						}else {
+							showErrorNotif("File does not exist","Invalid");
+						}
+					}
+				}else {
+					showNotif("Select a file.");	
+				}
+			}
+		});
 		fileButtonPanel.add(btnDownload);
 		
 		JButton btnUpload = new JButton("Upload");
+		btnUpload.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				File file;
+				if((file = showFileChooser(JFileChooser.FILES_ONLY)) != null) {
+					if(file.exists()) {
+						cc.sendFileUploadRequest(file, "Server");
+					}else {
+						showErrorNotif("File does not exist","Invalid");
+					}
+				}				
+			}
+		});
 		fileButtonPanel.add(btnUpload);
 		GroupLayout groupLayout = new GroupLayout(getContentPane());
 		groupLayout.setHorizontalGroup(

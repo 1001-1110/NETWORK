@@ -21,6 +21,7 @@ import packets.ChatRoomRequest;
 import packets.ChatRoomUserList;
 import packets.FileContent;
 import packets.FileHeader;
+import packets.FileList;
 import packets.GroupMessage;
 import packets.Message;
 import packets.OnlineList;
@@ -29,6 +30,7 @@ public class ClientController {
 	
 	private ClientView cv;
 	private String username;
+	private String serverDir;
 	private Socket socket;
 	private ObjectInputStream input;
 	private ObjectOutputStream output;
@@ -213,6 +215,8 @@ public class ClientController {
     		            		cv.updateRooms(((ChatRoomList) o).getChatRoomList());
     		            	}else if(o instanceof ChatRoomUserList) {
     		            		updateRoomChats((ChatRoomUserList) o);
+    		            	}else if(o instanceof FileList) {
+    		            		updateFiles((FileList) o);
     		            	}
     		            }
     		        } catch(IOException ex) {
@@ -236,6 +240,11 @@ public class ClientController {
     			roomChats.get(i).updateParticipants(crul.getParticipants());
     		}
     	}
+    }
+    
+    private void updateFiles(FileList fileList) {
+    	cv.updateFiles(fileList.getFiles(),fileList.getFileSizes());
+    	this.serverDir = fileList.getServerDir();
     }
     
     public void joinChatRoom(String roomName, String password) {
@@ -320,6 +329,15 @@ public class ClientController {
     		} catch (IOException e) {}       		
     	}     	
     }
+
+    public void sendFileDownloadRequest(File destFile, String fileName, int fileSize) {
+    	if(destFile != null) {
+    	    try {
+    			output.writeObject(new FileHeader(new File(serverDir+"\\"+fileName), destFile, username, "Server", "Download", 0, true));
+    			fileReceivers.add(new FileReceiver(destFile, new File(serverDir+"\\"+fileName), "Server", fileSize));
+    		} catch (IOException e) {}       		
+    	}     	
+    }    
     
     private void receiveFileUploadRequest(FileHeader fileHeader) {
     	if(fileHeader.getSourceFile() != null) {
@@ -368,7 +386,6 @@ public class ClientController {
     				fileReceivers.get(i).updateProgress(fileContent.getProgress());
     				fileReceivers.get(i).finishWrite();
     			}else {
-    				System.out.println(fileContent.getProgress() +""+ fileContent.getContent());
     				fileReceivers.get(i).updateProgress(fileContent.getProgress());
         			fileReceivers.get(i).writeBytes(fileContent.getContent());
     			}
