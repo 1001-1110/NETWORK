@@ -61,9 +61,16 @@ public class GroupChatView extends JFrame{
 	private void sendMessage(String message) {
 		if(message.equals("/clear")) {
 			chatBox.setText("");
+		}else if(message.equals("/autoscroll")) {
+			autoScroll();
 		}else if(!message.equals("")) {
 			cc.sendGroupMessage(message,participants);
 		}
+	}
+	
+	private void autoScroll() {
+		DefaultCaret caret = (DefaultCaret)chatBox.getCaret();
+		caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
 	}
 	
 	private void initialize() {

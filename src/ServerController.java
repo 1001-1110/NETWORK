@@ -10,6 +10,8 @@ import packets.ChatRoomList;
 import packets.ChatRoomMessage;
 import packets.ChatRoomRequest;
 import packets.ChatRoomUserList;
+import packets.FileContent;
+import packets.FileHeader;
 import packets.GroupMessage;
 import packets.Message;
 import packets.OnlineList;
@@ -27,6 +29,7 @@ public class ServerController {
 			+ "Chat commands:\n"
 			+ "/help : shows this help message\n"
 			+ "/clear : clears the chat\n"
+			+ "/autoscroll : autoscrolls the chat\n"
 			+ "==========";
 	
     public ServerController(int port){
@@ -174,6 +177,10 @@ public class ServerController {
     		            		}else {
     		            			unJoinChatRoom((ChatRoomRequest) o);
     		            		}
+    		            	}else if(o instanceof FileHeader) {
+    		            		fileHeaderSend((FileHeader) o);
+    		            	}else if(o instanceof FileContent) {
+    		            		fileContentSend((FileContent) o);
     		            	}
     		            }
     		        } catch(IOException ex) {
@@ -232,13 +239,6 @@ public class ServerController {
     	for(int i = 0 ; i < sm.getNumOfChatRooms() ; i++) {
     		if(sm.getRoom(i).getRoomName().equals(crr.getRoomName())) {
     			sm.getRoom(i).removeParticipant(crr.getSender());
-    			/*for(int j = 0 ; j < sm.getNumOfUsers() ; j++) {
-    				if(sm.getUser(j).getUsername().equals(crr.getSender())){
-    					try {
-    						sm.getUser(j).getOutput().writeObject(new ChatRoomRequest(crr.getRoomName(), crr.getPassword(), "Unjoin", true));		
-    					} catch (IOException e) {}
-    				}
-    			}*/	
     		}
     	} 
 		updateRoomUsers(crr.getRoomName());
@@ -417,6 +417,31 @@ public class ServerController {
     				}
 
     			}
+    		}
+    	}
+    	sv.updateChat("[ChatRoom ("+chatroomMessage.getRoomName()+")] "+chatroomMessage.getSender()+": "+chatroomMessage.getContent());
+    }
+    
+    private void fileHeaderSend(FileHeader fileHeader) {
+    	for(int i = 0 ; i < sm.getNumOfUsers() ; i++) {
+    		if(sm.getUser(i).getUsername().equals(fileHeader.getReceiver())) {
+    			try {
+					sm.getUser(i).getOutput().writeObject(fileHeader);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+    		}
+    	}
+    }
+    
+    private void fileContentSend(FileContent fileContent) {
+    	for(int i = 0 ; i < sm.getNumOfUsers() ; i++) {
+    		if(sm.getUser(i).getUsername().equals(fileContent.getReceiver())) {
+    			try {
+					sm.getUser(i).getOutput().writeObject(fileContent);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
     		}
     	}
     }

@@ -1,17 +1,26 @@
 
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.nio.file.Files;
 import java.util.ArrayList;
+
+import javax.swing.JFileChooser;
 
 import packets.ChatRoomAction;
 import packets.ChatRoomList;
 import packets.ChatRoomMessage;
 import packets.ChatRoomRequest;
 import packets.ChatRoomUserList;
+import packets.FileContent;
+import packets.FileHeader;
 import packets.GroupMessage;
 import packets.Message;
 import packets.OnlineList;
@@ -26,6 +35,8 @@ public class ClientController {
 	private ArrayList<PrivateChatView> privateChats;
 	private ArrayList<GroupChatView> groupChats;
 	private ArrayList<RoomChatView> roomChats;
+	private ArrayList<FileSender> fileSenders;
+	private ArrayList<FileReceiver> fileReceivers;
 	
     public ClientController(String serverIP, int port, String username){
     	cv = new ClientView(this,username);
@@ -33,8 +44,14 @@ public class ClientController {
     	privateChats = new ArrayList<>();
     	groupChats = new ArrayList<>();
     	roomChats = new ArrayList<>();
+    	fileSenders = new ArrayList<>();
+    	fileReceivers = new ArrayList<>();
     	connectSocket(serverIP,port,username);
     }
+    
+    public String getUsername() {
+    	return username;
+    }    
     
     public void createPrivateChat(String username) {
     	if(this.username.equals(username)) {
@@ -178,6 +195,18 @@ public class ClientController {
     		            				cv.showErrorNotif("Invalid password", "Invalid"); 
     		            			}  		            			
     		            		}
+    		            	}else if(o instanceof FileHeader) {
+    		            		if(((FileHeader) o).getRequest().equals("Upload")) {
+    		            			receiveFileUploadRequest((FileHeader) o);
+    		            		}else if(((FileHeader) o).getRequest().equals("Download")) {
+    		            			if(((FileHeader) o).isAccepted()) {
+    		            				receiveFileDownloadRequest((FileHeader) o);
+    		            			}else {
+    		            				receiveRejectedFileDownloadRequest((FileHeader) o);
+    		            			}
+    		            		}
+    		            	}else if(o instanceof FileContent) {
+    		            		receiveFileContent((FileContent) o);
     		            	}else if(o instanceof OnlineList) {
     		            		cv.updateOnline(((OnlineList) o).getUsers());
     		            	}else if(o instanceof ChatRoomList) {
@@ -283,8 +312,200 @@ public class ClientController {
     	}    	
     }    
     
-    public String getUsername() {
-    	return username;
+    public void sendFileUploadRequest(File sourceFile, String receiver) {
+    	if(sourceFile != null) {
+    	    try {
+    			output.writeObject(new FileHeader(sourceFile, null, username, receiver, "Upload",(int) Files.size(sourceFile.toPath()), false));
+    			fileSenders.add(new FileSender(sourceFile, receiver));
+    		} catch (IOException e) {}       		
+    	}     	
+    }
+    
+    private void receiveFileUploadRequest(FileHeader fileHeader) {
+    	if(fileHeader.getSourceFile() != null) {
+    		if(cv.showConfirmNotif("Receive "+fileHeader.getSourceFile().getName()+" from "+fileHeader.getSender()+"?")) {
+        		File file;
+        		if((file = cv.showFileChooser(JFileChooser.DIRECTORIES_ONLY)) != null) {
+            	    try {
+            			output.writeObject(new FileHeader(fileHeader.getSourceFile(), file, username, fileHeader.getSender(), "Download", fileHeader.getMaxBytes(), true));
+            			fileReceivers.add(new FileReceiver(file, fileHeader.getSourceFile(), fileHeader.getSender(), fileHeader.getMaxBytes()));
+            		} catch (IOException e) {}      			
+        		}    			
+    		}else {
+        	    try {
+        			output.writeObject(new FileHeader(fileHeader.getSourceFile(), null, username, fileHeader.getSender(), "Download", fileHeader.getMaxBytes(), false));
+        		} catch (IOException e) {}     			
+    		}
+    	}     	
+    } 
+    
+    private void receiveFileDownloadRequest(FileHeader fileHeader) {
+    	for(int i = 0 ; i < fileSenders.size() ; i++) {
+    		if(fileSenders.get(i).getReceiver().equals(fileHeader.getSender()) && 
+    				fileSenders.get(i).getSourceFile().equals(fileHeader.getSourceFile())) {
+    			fileSenders.get(i).setDestFile(fileHeader.getDestFile());
+    			fileSenders.get(i).start();
+    		}
+    	}    	
+    }
+    
+    private void receiveRejectedFileDownloadRequest(FileHeader fileHeader) {
+    	for(int i = 0 ; i < fileSenders.size() ; i++) {
+    		if(fileSenders.get(i).getReceiver().equals(fileHeader.getReceiver()) && 
+    				fileSenders.get(i).getSourceFile().equals(fileHeader.getSourceFile())) {
+    			fileSenders.get(i).close();
+    			fileSenders.remove(i);
+    		}
+    	}
+    }
+    
+    private void receiveFileContent(FileContent fileContent) {
+    	for(int i = 0 ; i < fileReceivers.size() ; i++) {
+    		if(fileReceivers.get(i).getSender().equals(fileContent.getSender()) && 
+    				fileReceivers.get(i).getSourceFile().equals(fileContent.getSourceFile()) && 
+    	    				fileReceivers.get(i).getDestFile().equals(fileContent.getDestFile())) {
+    			if(fileContent.getContent().length == 0) {
+    				fileReceivers.get(i).updateProgress(fileContent.getProgress());
+    				fileReceivers.get(i).finishWrite();
+    			}else {
+    				System.out.println(fileContent.getProgress() +""+ fileContent.getContent());
+    				fileReceivers.get(i).updateProgress(fileContent.getProgress());
+        			fileReceivers.get(i).writeBytes(fileContent.getContent());
+    			}
+    		}
+    	}
+    }
+    
+    class FileReceiver{
+    	
+    	private FileOutputStream fos;
+    	private String sender;
+    	private File sourceFile;
+    	private File destFile;
+    	private FileTransferView fileTransfer;
+    	
+    	public FileReceiver(File destFile, File sourceFile, String sender, int maxBytes) {
+    		try {
+				fos = new FileOutputStream(destFile.getAbsolutePath()+"\\"+sourceFile.getName());
+				this.sender = sender;
+				this.sourceFile = sourceFile;
+				this.destFile = destFile;
+				fileTransfer = new FileTransferView(cv.getX(),cv.getY());
+	    		fileTransfer.setState("Receiving "+sourceFile.getName()+" from: "+sender);
+	    		fileTransfer.setAmount("Received: 0 bytes");   
+	    		fileTransfer.setMaxProgress(maxBytes);
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			}
+    	}
+    	
+    	public String getSender() {
+			return sender;
+		}
+
+		public File getSourceFile() {
+			return sourceFile;
+		}
+
+		public File getDestFile() {
+			return destFile;
+		}
+		
+		public void updateProgress(int progress) {
+			fileTransfer.setAmount("Received: "+progress+" bytes");
+			fileTransfer.setProgress(progress);
+		}
+		
+		public void writeBytes(byte content[]) {
+    		try {
+				fos.write(content);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+    	}
+    	
+    	public void finishWrite() {
+    		try {
+				fos.close();
+				fileTransfer.dispose();
+				fileReceivers.remove(this);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+    	}
+    	
+    }
+    
+    class FileSender extends Thread{
+    	
+    	private FileInputStream fis;
+    	private String receiver;
+    	private File sourceFile;
+    	private File destFile;
+    	private FileTransferView fileTransfer;
+    	
+    	public FileSender(File sourceFile, String receiver) {
+    		this.sourceFile = sourceFile;
+    		this.receiver = receiver;
+    		fileTransfer = new FileTransferView(cv.getX(),cv.getY());
+    		fileTransfer.setState("Waiting response from: "+receiver);
+    		fileTransfer.setAmount("Sent: 0 bytes");   
+    	}
+    	
+		public String getReceiver() {
+			return receiver;
+		}
+
+		public File getSourceFile() {
+			return sourceFile;
+		}
+		
+		public void setDestFile(File destFile) {
+			this.destFile = destFile;
+		}
+
+		public File getDestFile() {
+			return destFile;
+		}
+    	
+		public void close() {
+			fileTransfer.dispose();
+		}
+		
+		public void run() {
+    		try {
+				fis = new FileInputStream(sourceFile);
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			}			
+    		try {
+    			int progress = 0;
+        		fileTransfer.setMaxProgress(fis.available());
+        		fileTransfer.setState("Sending "+sourceFile.getName()+" to: "+receiver); 
+				while(fis.available() > 0) {
+					int buffer;
+					if(fis.available() <= 1024) {
+						buffer = fis.available();
+					}else {
+						buffer = 1024;
+					}
+					progress += buffer;
+					fileTransfer.setProgress(progress);
+	        		fileTransfer.setAmount("Sent: "+progress+" bytes");  
+					byte content[] = new byte[buffer];
+					fis.read(content);
+					output.writeObject(new FileContent(sourceFile, destFile, username, receiver, progress, content));
+				}
+				byte content[] = new byte[0];
+				output.writeObject(new FileContent(sourceFile, destFile, username, receiver, progress, content));
+				fis.close();
+				close();
+				fileSenders.remove(this);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+    	
     }
     
     class ChatRoomListener implements WindowListener{

@@ -5,3 +5,7 @@
 /MainView$3.class
 /MainView$4.class
 /ClientController$ChatRoomListener.class
+/ClientView$7.class
+/FileTransferView.class
+/ClientController$FileReceiver.class
+/ClientController$FileSender.class

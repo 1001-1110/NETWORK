@@ -3,6 +3,7 @@ import javax.swing.JFrame;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JTextArea;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.ListSelectionModel;
@@ -17,6 +18,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.io.File;
 import java.util.ArrayList;
 
 import javax.swing.JPanel;
@@ -62,6 +64,10 @@ public class ClientView extends JFrame{
 		JOptionPane.showMessageDialog(this, notification);
 	}
 	
+	public boolean showConfirmNotif(String notification) {
+		return JOptionPane.showConfirmDialog(this, notification) == JOptionPane.YES_OPTION;
+	}
+	
 	public void showErrorNotif(String notification, String header) {
 		JOptionPane.showMessageDialog(this,notification,header,JOptionPane.ERROR_MESSAGE);	
 	}
@@ -70,12 +76,28 @@ public class ClientView extends JFrame{
 		return JOptionPane.showInputDialog(this, notification);
 	}
 	
+	public File showFileChooser(int selectionMode) {
+		JFileChooser jfc = new JFileChooser();
+		jfc.setFileSelectionMode(selectionMode);
+		if(jfc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+			return jfc.getSelectedFile();
+		}
+		return null;
+	}
+	
 	private void sendMessage(String message) {	
 		if(message.equals("/clear")) {
 			chatBox.setText("");
+		}else if(message.equals("/autoscroll")) {
+			autoScroll();
 		}else if(!message.equals("")){
 			cc.sendMessage(message,"all");					
 		}
+	}
+	
+	private void autoScroll() {
+		DefaultCaret caret = (DefaultCaret)chatBox.getCaret();
+		caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
 	}
 	
 	private void initialize() {
@@ -94,13 +116,6 @@ public class ClientView extends JFrame{
 		
 		JPanel roomPanel = new JPanel();
 		roomPanel.setBorder(new TitledBorder(new LineBorder(new Color(184, 207, 229)), "Chatrooms", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(51, 51, 51)));
-
-		/*
-		  		JFileChooser fc = new JFileChooser();
-				int returnVal = fc.showOpenDialog(null);
-				File file = fc.getSelectedFile();
-				System.out.println(file.getName());
-		*/
 		
 		JPanel roomButtonPanel = new JPanel();
 		
@@ -249,6 +264,22 @@ public class ClientView extends JFrame{
 		});
 		
 		JButton btnSendFile = new JButton("Send File");
+		btnSendFile.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if(userList.getSelectedValue() != null) {
+					File file;
+					if((file = showFileChooser(JFileChooser.FILES_ONLY)) != null) {
+						if(file.exists()) {
+							cc.sendFileUploadRequest(file, userList.getSelectedValue());
+						}else {
+							showErrorNotif("File does not exist","Invalid");
+						}
+					}
+				}else {
+					showNotif("Select an online user.");	
+				}
+			}
+		});
 		userButtonPanel.add(btnSendFile);
 		
 		JButton btnStartGame = new JButton("Start Game");
@@ -362,8 +393,8 @@ public class ClientView extends JFrame{
 		
 		chatBox = new JTextArea();
 		chatBox.setEditable(false);
-		DefaultCaret caret = (DefaultCaret)chatBox.getCaret();
-		caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
+		
+		autoScroll();
 		
 		chatScroll.setViewportView(chatBox);
 		chatPanel.setLayout(gl_chatPanel);
