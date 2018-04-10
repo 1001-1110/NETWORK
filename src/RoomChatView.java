@@ -15,12 +15,9 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.util.ArrayList;
 
-import javax.swing.ScrollPaneConstants;
 import javax.swing.UIManager;
+
 import java.awt.Color;
 import javax.swing.border.LineBorder;
 import javax.swing.JPanel;
@@ -63,14 +60,12 @@ public class RoomChatView extends JFrame{
 		if(message.equals("/clear")) {
 			chatBox.setText("");
 		}else if(!message.equals("")) {
-			//cc.sendMessage(message,recipient);
-			updateChat(owner+": "+message);
+			cc.sendChatRoomMessage(message, roomName);
 		}
 	}		
 	
 	private void initialize() {
 		setBounds(100, 100, 580, 330);
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
 		try {
 			setDefaultLookAndFeelDecorated(isDefaultLookAndFeelDecorated());			
@@ -200,5 +195,7 @@ public class RoomChatView extends JFrame{
 		userList.setBorder(new TitledBorder(UIManager.getBorder("TitledBorder.border"), "Participants", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
 		userScroll.setViewportView(userList);
 		getContentPane().setLayout(groupLayout);
+		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		
 	}
 }

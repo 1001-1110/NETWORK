@@ -13,6 +13,8 @@ import javax.swing.JButton;
 import java.awt.FlowLayout;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 
 public class MainView extends JFrame{
 
@@ -81,6 +83,14 @@ public class MainView extends JFrame{
 		clientPanel.add(usernameLabel);
 		
 		username = new JTextField();
+		username.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyTyped(KeyEvent e) {
+				if(e.getKeyChar() == '\n') {
+					mc.newClient(connectServerIP.getText(), Integer.parseInt(connectServerPort.getText()), username.getText());
+				}
+			}
+		});
 		clientPanel.add(username);
 		username.setColumns(10);
 		
@@ -96,6 +106,14 @@ public class MainView extends JFrame{
 		serverPanel.add(portLabel);
 		
 		startServerPort = new JTextField();
+		startServerPort.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyTyped(KeyEvent e) {
+				if(e.getKeyChar() == '\n') {
+					mc.newServer(Integer.parseInt(startServerPort.getText()));
+				}
+			}
+		});
 		serverPanel.add(startServerPort);
 		startServerPort.setColumns(10);
 		

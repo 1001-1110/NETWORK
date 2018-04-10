@@ -150,8 +150,8 @@ public class ClientView extends JFrame{
 						.addComponent(roomPanel, GroupLayout.DEFAULT_SIZE, 170, Short.MAX_VALUE))
 					.addPreferredGap(ComponentPlacement.RELATED)
 					.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
-						.addComponent(userPanel, GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE)
-						.addComponent(userButtonPanel, GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE))
+						.addComponent(userButtonPanel, GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE)
+						.addComponent(userPanel, GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE))
 					.addPreferredGap(ComponentPlacement.RELATED)
 					.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
 						.addComponent(fileButtonPanel, GroupLayout.DEFAULT_SIZE, 145, Short.MAX_VALUE)
@@ -163,17 +163,17 @@ public class ClientView extends JFrame{
 				.addGroup(groupLayout.createSequentialGroup()
 					.addContainerGap()
 					.addGroup(groupLayout.createParallelGroup(Alignment.BASELINE)
-						.addComponent(chatPanel, GroupLayout.DEFAULT_SIZE, 198, Short.MAX_VALUE)
-						.addComponent(userPanel, GroupLayout.DEFAULT_SIZE, 198, Short.MAX_VALUE)
-						.addComponent(filePanel, GroupLayout.DEFAULT_SIZE, 198, Short.MAX_VALUE)
-						.addComponent(roomPanel, GroupLayout.DEFAULT_SIZE, 198, Short.MAX_VALUE))
+						.addComponent(chatPanel, GroupLayout.DEFAULT_SIZE, 167, Short.MAX_VALUE)
+						.addComponent(userPanel, GroupLayout.DEFAULT_SIZE, 167, Short.MAX_VALUE)
+						.addComponent(filePanel, GroupLayout.DEFAULT_SIZE, 167, Short.MAX_VALUE)
+						.addComponent(roomPanel, GroupLayout.DEFAULT_SIZE, 167, Short.MAX_VALUE))
 					.addGap(5)
 					.addGroup(groupLayout.createParallelGroup(Alignment.LEADING, false)
-						.addComponent(userButtonPanel, GroupLayout.PREFERRED_SIZE, 67, Short.MAX_VALUE)
 						.addComponent(chatInputPanel, GroupLayout.PREFERRED_SIZE, 28, GroupLayout.PREFERRED_SIZE)
-						.addComponent(roomButtonPanel, 0, 0, Short.MAX_VALUE)
-						.addComponent(fileButtonPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-					.addGap(10))
+						.addComponent(userButtonPanel, 0, 0, Short.MAX_VALUE)
+						.addComponent(roomButtonPanel, GroupLayout.PREFERRED_SIZE, 78, Short.MAX_VALUE)
+						.addComponent(fileButtonPanel, 0, 0, Short.MAX_VALUE))
+					.addGap(20))
 		);
 		
 		JButton btnDeleteFile = new JButton("Delete");
@@ -194,12 +194,12 @@ public class ClientView extends JFrame{
 		JButton btnSend = new JButton("Send");
 		GroupLayout gl_chatInputPanel = new GroupLayout(chatInputPanel);
 		gl_chatInputPanel.setHorizontalGroup(
-			gl_chatInputPanel.createParallelGroup(Alignment.LEADING)
-				.addGroup(Alignment.TRAILING, gl_chatInputPanel.createSequentialGroup()
+			gl_chatInputPanel.createParallelGroup(Alignment.TRAILING)
+				.addGroup(gl_chatInputPanel.createSequentialGroup()
 					.addContainerGap()
-					.addComponent(input, GroupLayout.DEFAULT_SIZE, 247, Short.MAX_VALUE)
+					.addComponent(input, GroupLayout.DEFAULT_SIZE, 241, Short.MAX_VALUE)
 					.addPreferredGap(ComponentPlacement.RELATED)
-					.addComponent(btnSend, GroupLayout.PREFERRED_SIZE, 63, GroupLayout.PREFERRED_SIZE)
+					.addComponent(btnSend, GroupLayout.PREFERRED_SIZE, 69, GroupLayout.PREFERRED_SIZE)
 					.addGap(9))
 		);
 		gl_chatInputPanel.setVerticalGroup(
@@ -279,6 +279,23 @@ public class ClientView extends JFrame{
 		roomButtonPanel.add(btnCreate);
 		
 		JButton btnJoin = new JButton("Join");
+		btnJoin.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if(roomList.getSelectedValue() != null) {
+					String password = showInputNotif("Enter password: ");
+					if(password != null) {
+						if(!password.contains(" ")) {
+							String roomName[] = roomList.getSelectedValue().split("\n");
+							cc.joinChatRoom(roomName[0], password);							
+						}else {
+							showErrorNotif("Invalid password.","Invalid");
+						}
+					}					
+				}else {
+					showNotif("Select a room.");
+				}
+			}
+		});
 		roomButtonPanel.add(btnJoin);
 		
 		JButton btnDeleteChatRoom = new JButton("Delete");
@@ -352,4 +369,5 @@ public class ClientView extends JFrame{
 		chatPanel.setLayout(gl_chatPanel);
 		getContentPane().setLayout(groupLayout);
 	}
+	
 }
