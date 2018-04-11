@@ -236,7 +236,7 @@ public class ClientController {
     		            	}else if(o instanceof NewGame) {
     		            		receiveGame(((NewGame) o).getPlayer());
     		            	}else if(o instanceof JankenMove) {
-    		            		receiveMove(o);
+    		            		receiveMove((JankenMove) o);
     		            	}
     		            }
     		        } catch(IOException ex) {
@@ -268,7 +268,7 @@ public class ClientController {
     }
     
     public void createGame(String opponent) {
-    	gameViews.add(new GameView(opponent));
+    	gameViews.add(new GameView(opponent, this));
     	try {
 			output.writeObject(new NewGame(username, opponent));
 		} catch (IOException e) {
@@ -277,11 +277,24 @@ public class ClientController {
     }
     
     public void receiveGame(String opponent) {
-    	gameViews.add(new GameView(opponent));
+    	gameViews.add(new GameView(opponent, this));
     }
     
-    public void receiveMove() {
-    	
+    public void receiveMove(JankenMove move) {
+    	for(int i = 0 ; i < gameViews.size() ; i++) {
+    		if(gameViews.get(i).getOpponent().equals(move.getPlayer())) {
+    			gameViews.get(i).setOpponent(move.getMove());
+    		}
+    	}
+    }
+    
+    public void sendMove(String move, String opponent) {
+    	try {
+			output.writeObject(new JankenMove(move, username, opponent));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
     }
     
     public void joinChatRoom(String roomName, String password) {
