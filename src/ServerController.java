@@ -226,7 +226,7 @@ public class ServerController {
 	            				}    		            		
     		            	}else if(o instanceof JankenMove) {
 	            				for(int i = 0 ; i < sm.getNumOfUsers() ; i++) {
-	            					if(sm.getUser(i).getUsername().equals(((NewGame) o).getOpponent())) {
+	            					if(sm.getUser(i).getUsername().equals(((JankenMove) o).getOpponent())) {
 	            						sm.getUser(i).getOutput().writeObject(o);
 	            					}
 	            				}    		            		

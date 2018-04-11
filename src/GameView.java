@@ -16,6 +16,7 @@ public class GameView extends JFrame{
 
 	String opponent;
 	boolean opponentMoved;
+	boolean playerMoved;
 	String opponentMove;
 	int oScore;
 	int pScore;
@@ -32,10 +33,27 @@ public class GameView extends JFrame{
 	public GameView(String opponent, ClientController cc) {
 		this.opponent = opponent;
 		this.opponentMoved = false;
+		this.playerMoved = false;
 		this.cc = cc;
 		oScore = 0;
 		pScore = 0;
 		initialize();
+		Thread t = new Thread(){
+			public void run() {
+				while(true) {
+					if(!opponentMoved) {
+						enableButtons();
+						try {
+							Thread.sleep(1000);
+						} catch (InterruptedException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}	
+				}
+			}
+		};
+		t.start();
 		setVisible(true);
 	}
 	
@@ -49,7 +67,7 @@ public class GameView extends JFrame{
 
 	public void setOpponent(String opponent) {
 		opponentMove = opponent;
-		if(!lblPlayer.getText().equals("----")) {
+		if(playerMoved) {
 			reveal();
 		}else {
 			opponentMoved = true;
@@ -63,14 +81,6 @@ public class GameView extends JFrame{
 	public void reveal() {
 		lblOpponent.setText(opponentMove);
 		opponentMoved = false;
-		try {
-			Thread.sleep(1000);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		lblPlayer.setText("----");
-		lblOpponent.setText("----");
 		lblPScore.setText("Score: "+pScore);
 		lblOScore.setText("Score: "+oScore);
 		enableButtons();
@@ -174,6 +184,7 @@ public class GameView extends JFrame{
 		btnRock.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				setPlayer("Rock");
+				playerMoved = true;
 				cc.sendMove("Rock", opponent);
 				disableButtons();
 				if(opponentMoved) {
@@ -187,6 +198,7 @@ public class GameView extends JFrame{
 		btnPaper.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				setPlayer("Paper");
+				playerMoved = true;
 				cc.sendMove("Paper", opponent);
 				disableButtons();
 				if(opponentMoved) {
@@ -200,6 +212,7 @@ public class GameView extends JFrame{
 		btnScissors.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				setPlayer("Scissors");
+				playerMoved = true;
 				cc.sendMove("Scissors", opponent);
 				disableButtons();
 				if(opponentMoved) {
