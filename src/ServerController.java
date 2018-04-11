@@ -20,6 +20,7 @@ import packets.FileHeader;
 import packets.FileList;
 import packets.GroupMessage;
 import packets.Message;
+import packets.NewGame;
 import packets.OnlineList;
 
 public class ServerController {
@@ -216,6 +217,12 @@ public class ServerController {
     		            		}else {
     		            			fileContentSend((FileContent) o);
     		            		}
+    		            	}else if(o instanceof NewGame) {
+	            				for(int i = 0 ; i < sm.getNumOfUsers() ; i++) {
+	            					if(sm.getUser(i).getUsername().equals(((NewGame) o).getOpponent())) {
+	            						sm.getUser(i).getOutput().writeObject(o);
+	            					}
+	            				}    		            		
     		            	}
     		            }
     		        } catch(IOException ex) {

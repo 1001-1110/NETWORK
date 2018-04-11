@@ -227,6 +227,7 @@ public class ClientView extends JFrame{
 		
 		JButton btnDeleteFile = new JButton("Delete");
 		fileButtonPanel.add(btnDeleteFile);
+		btnDeleteFile.setEnabled(false);
 		
 		input = new JTextField();
 		input.addKeyListener(new KeyAdapter() {
@@ -317,6 +318,15 @@ public class ClientView extends JFrame{
 		userButtonPanel.add(btnSendFile);
 		
 		JButton btnStartGame = new JButton("Start Game");
+		btnStartGame.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if(userList.getSelectedValue() != null) {
+					cc.createGame(userList.getSelectedValue());
+				}else {
+					showNotif("Select an online user.");	
+				}
+			}
+		});
 		userButtonPanel.add(btnStartGame);
 		roomButtonPanel.setLayout(new GridLayout(0, 1, 5, 5));
 		

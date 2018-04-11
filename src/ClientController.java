@@ -23,7 +23,9 @@ import packets.FileContent;
 import packets.FileHeader;
 import packets.FileList;
 import packets.GroupMessage;
+import packets.JankenMove;
 import packets.Message;
+import packets.NewGame;
 import packets.OnlineList;
 
 public class ClientController {
@@ -39,6 +41,7 @@ public class ClientController {
 	private ArrayList<RoomChatView> roomChats;
 	private ArrayList<FileSender> fileSenders;
 	private ArrayList<FileReceiver> fileReceivers;
+	private ArrayList<GameView> gameViews;
 	
     public ClientController(String serverIP, int port, String username){
     	cv = new ClientView(this,username);
@@ -46,6 +49,7 @@ public class ClientController {
     	privateChats = new ArrayList<>();
     	groupChats = new ArrayList<>();
     	roomChats = new ArrayList<>();
+    	gameViews = new ArrayList<>();
     	fileSenders = new ArrayList<>();
     	fileReceivers = new ArrayList<>();
     	connectSocket(serverIP,port,username);
@@ -229,6 +233,10 @@ public class ClientController {
     		            		updateRoomChats((ChatRoomUserList) o);
     		            	}else if(o instanceof FileList) {
     		            		updateFiles((FileList) o);
+    		            	}else if(o instanceof NewGame) {
+    		            		receiveGame(((NewGame) o).getPlayer());
+    		            	}else if(o instanceof JankenMove) {
+    		            		receiveMove(o);
     		            	}
     		            }
     		        } catch(IOException ex) {
@@ -257,6 +265,23 @@ public class ClientController {
     private void updateFiles(FileList fileList) {
     	cv.updateFiles(fileList.getFiles(),fileList.getFileSizes());
     	this.serverDir = fileList.getServerDir();
+    }
+    
+    public void createGame(String opponent) {
+    	gameViews.add(new GameView(opponent));
+    	try {
+			output.writeObject(new NewGame(username, opponent));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+    }
+    
+    public void receiveGame(String opponent) {
+    	gameViews.add(new GameView(opponent));
+    }
+    
+    public void receiveMove() {
+    	
     }
     
     public void joinChatRoom(String roomName, String password) {
